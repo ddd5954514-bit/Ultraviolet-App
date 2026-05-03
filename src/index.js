@@ -10,7 +10,7 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 
 const app = express();
 
-// הנתיב הראשי - מציג דף כניסה תמים למערכת סגורה
+// 1. הנתיב הראשי - מציג דף כניסה תמים למערכת סגורה (ההסוואה)
 app.get('/', (req, res) => {
 	res.send(`
 		<!DOCTYPE html>
@@ -30,15 +30,21 @@ app.get('/', (req, res) => {
 	`);
 });
 
-// הנתיב הסודי החדש והתמים - גישה אליו תפתח את הממשק
-app.use("/workspace-login", express.static("./public"));
+// 2. הדלת הסודית - טוענת רק את הממשק החזותי (ה-HTML) של המערכת
+app.get('/workspace-login', (req, res) => {
+	res.sendFile('index.html', { root: './public' });
+});
 
-// טעינת קבצי הליבה של המערכת
+// 3. טעינת קבצי הרקע של המערכת (קריטי כדי ששורת החיפוש תעבוד)
+// index: false מורה לשרת *לא* לחשוף את הממשק בנתיב הראשי
+app.use(express.static('./public', { index: false }));
+
+// טעינת קבצי הליבה של Ultraviolet
 app.use("/uv/", express.static(uvPath));
 app.use("/epoxy/", express.static(epoxyPath));
 app.use("/baremux/", express.static(baremuxPath));
 
-// טיפול בשגיאות - מחזיר שגיאת 404 גנרית ולא מחשידה
+// טיפול בשגיאות 
 app.use((req, res) => {
 	res.status(404).send("404 - Not Found");
 });
