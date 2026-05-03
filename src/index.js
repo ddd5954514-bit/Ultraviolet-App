@@ -10,35 +10,35 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 
 const app = express();
 
-// הנתיב הראשי - מציג דף "בבנייה" תמים לכל מי שנכנס לכתובת הרגילה
+// הנתיב הראשי - מציג דף כניסה תמים למערכת סגורה
 app.get('/', (req, res) => {
 	res.send(`
 		<!DOCTYPE html>
 		<html dir="rtl">
 		<head>
 			<meta charset="UTF-8">
-			<title>בבנייה</title>
+			<title>מערכת ניהול אזורית</title>
 			<style>
 				body { font-family: sans-serif; text-align: center; margin-top: 15%; color: #333; }
 			</style>
 		</head>
 		<body>
-			<h1>האתר בבנייה</h1>
-			<p>נחזור לפעילות בהקדם.</p>
+			<h1>גישה למורשים בלבד</h1>
+			<p>אנא פנה למנהל הרשת לקבלת הרשאות מתאימות.</p>
 		</body>
 		</html>
 	`);
 });
 
-// הנתיב הסודי שלך - טוען את הממשק רק כשניגשים ל-UUID המדויק
-app.use("/06e566d6-131a-42ab-8918-47367b6b8cb2", express.static("./public"));
+// הנתיב הסודי החדש והתמים - גישה אליו תפתח את הממשק
+app.use("/workspace-login", express.static("./public"));
 
-// טעינת קבצי הליבה של המערכת (נשארים בנתיב המקורי כדי שהקוד בדפדפן לא יישבר)
+// טעינת קבצי הליבה של המערכת
 app.use("/uv/", express.static(uvPath));
 app.use("/epoxy/", express.static(epoxyPath));
 app.use("/baremux/", express.static(baremuxPath));
 
-// טיפול בשגיאות - מחזיר שגיאת 404 גנרית ולא מחשידה לכל נתיב אחר שאינו קיים
+// טיפול בשגיאות - מחזיר שגיאת 404 גנרית ולא מחשידה
 app.use((req, res) => {
 	res.status(404).send("404 - Not Found");
 });
