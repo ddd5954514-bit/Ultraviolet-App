@@ -9,18 +9,38 @@ import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 
 const app = express();
-// Load our publicPath first and prioritize it over UV.
-app.use(express.static("./public"));
-// Load vendor files last.
-// The vendor's uv.config.js won't conflict with our uv.config.js inside the publicPath directory.
+
+// הנתיב הראשי - מציג דף "בבנייה" תמים לכל מי שנכנס לכתובת הרגילה
+app.get('/', (req, res) => {
+	res.send(`
+		<!DOCTYPE html>
+		<html dir="rtl">
+		<head>
+			<meta charset="UTF-8">
+			<title>בבנייה</title>
+			<style>
+				body { font-family: sans-serif; text-align: center; margin-top: 15%; color: #333; }
+			</style>
+		</head>
+		<body>
+			<h1>האתר בבנייה</h1>
+			<p>נחזור לפעילות בהקדם.</p>
+		</body>
+		</html>
+	`);
+});
+
+// הנתיב הסודי שלך - טוען את הממשק רק כשניגשים ל-UUID המדויק
+app.use("/06e566d6-131a-42ab-8918-47367b6b8cb2", express.static("./public"));
+
+// טעינת קבצי הליבה של המערכת (נשארים בנתיב המקורי כדי שהקוד בדפדפן לא יישבר)
 app.use("/uv/", express.static(uvPath));
 app.use("/epoxy/", express.static(epoxyPath));
 app.use("/baremux/", express.static(baremuxPath));
 
-// Error for everything else
+// טיפול בשגיאות - מחזיר שגיאת 404 גנרית ולא מחשידה לכל נתיב אחר שאינו קיים
 app.use((req, res) => {
-	res.status(404);
-	res.sendFile("./public/404.html");
+	res.status(404).send("404 - Not Found");
 });
 
 const server = createServer();
@@ -30,6 +50,7 @@ server.on("request", (req, res) => {
 	res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
 	app(req, res);
 });
+
 server.on("upgrade", (req, socket, head) => {
 	if (req.url.endsWith("/wisp/")) {
 		wisp.routeRequest(req, socket, head);
@@ -45,8 +66,6 @@ if (isNaN(port)) port = 8080;
 server.on("listening", () => {
 	const address = server.address();
 
-	// by default we are listening on 0.0.0.0 (every interface)
-	// we just need to list a few
 	console.log("Listening on:");
 	console.log(`\thttp://localhost:${address.port}`);
 	console.log(`\thttp://${hostname()}:${address.port}`);
@@ -57,7 +76,6 @@ server.on("listening", () => {
 	);
 });
 
-// https://expressjs.com/en/advanced/healthcheck-graceful-shutdown.html
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
