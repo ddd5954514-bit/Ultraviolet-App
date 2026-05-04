@@ -1,0 +1,28 @@
+{
+    "inbounds": [
+        {
+            "port": 7860,
+            "protocol": "vless",
+            "settings": {
+                "clients": [
+                    {
+                        "id": "06e566d6-131a-42ab-8918-47367b6b8cb2",
+                        "level": 0
+                    }
+                ],
+                "decryption": "none"
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/api/v1/sync"
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom"
+        }
+    ]
+}
