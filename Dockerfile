@@ -1,25 +1,20 @@
-FROM node:lts-alpine
+FROM alpine:latest
 
-LABEL maintainer="TitaniumNetwork Ultraviolet Team"
-LABEL summary="Ultraviolet Proxy Image"
-LABEL description="Example application of Ultraviolet which can be deployed in production."
-
-ENV NODE_ENV=production
 WORKDIR /app
 
-RUN apk add --upgrade --no-cache python3 make g++
+# התקנת כלים נדרשים, הורדת Xray-core והרשאות הרצה
+RUN apk add --no-cache wget unzip ca-certificates \
+    && wget -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip \
+    && unzip xray.zip \
+    && rm xray.zip \
+    && chmod +x xray
 
-RUN npm install --global corepack@latest
+# העתקת קובץ התצורה שיצרנו
+COPY config.json .
 
-COPY package.json /app/package.json
-COPY pnpm-lock.yaml /app/pnpm-lock.yaml
+# הגדרת הפורט שעליו Hugging Face מאזין
+ENV PORT=7860
+EXPOSE 7860
 
-RUN corepack install
-RUN pnpm install
-
-COPY . /app
-
-EXPOSE 8080
-
-ENTRYPOINT [ "node" ]
-CMD ["src/index.js"]
+# הפעלת ליבת VLESS
+CMD ["./xray", "-config", "config.json"]
